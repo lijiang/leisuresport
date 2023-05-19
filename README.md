@@ -23,12 +23,11 @@ last year, by the various sports and activities the leisure provider has recorde
 5. clear the config cache `php artisan config:cache`
 6. uncomment php extension in php.ini: pmg, fileinfo, pdo_mysql
 7. Run `php artisan migrate --seed` to migrate db files
-8. Run `php artisan nft:import-meta-data` to import initial nfts
-9. Run `php artisan serve` to Start the server
+8. Run `php artisan serve` to Start the server
 
 
 ### Code
-1. Get server source code `git clone https://github.com/MetaGym-Inc/meta-gym-backend.git`
+1. Get server source code `git clone git@github.com:lijiang/leisuresport.git`
 
 ### Commands
 1. `php artisan sport:archive_head_count_last_year` archive sport head count for last year
