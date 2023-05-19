@@ -3,31 +3,54 @@
 namespace App\Http\Controllers\Api\Sports\V1;
 
 use App\Http\Controllers\Controller;
-use App\Models\Activity;
 use App\Models\Sport;
-use Illuminate\Http\Request;
+use App\Models\YearlySportsHeadcountStatistic;
+
+
+define('YEARLY_STATISTICS_CACHE_SECONDS', 86400);
+define('YEARLY_ACTIVITIES_STATISTICS_CACHE_SECONDS', 86400);
+
 
 class SportV1Controller extends Controller
 {
-
-    public function yearlyHeadcountStatistics(Request $request)
+    public function yearlyHeadcountStatistics($year)
     {
-        $lastYear = date('Y') - 1;
-        $sports = Sport::with(['headcountStatistics' => function ($query) use ($lastYear) {
-            $query->where('year', $lastYear);
-        }])->withCount(['headcountStatistics as headcount'])->get();
-        return okHttpResponse($sports);
+        $cacheKey = 'yearlyHeadcountStatistics_' . $year;
+        $results = cache()->remember($cacheKey, YEARLY_STATISTICS_CACHE_SECONDS, function () use ($year) {
+            $headcountStatistics = YearlySportsHeadcountStatistic::where('year', $year)
+                ->selectRaw('sport_id, SUM(total_headcount) as total_headcount')
+                ->groupBy('sport_id')
+                ->with('sport')
+                ->get();
+            return $headcountStatistics->map(function ($item) {
+                return [
+                    'id' => $item->sport->id,
+                    'name' => $item->sport->name,
+                    'headcount' => (int) $item->total_headcount,
+                ];
+            });
+        });
+
+        return okHttpResponse($results);
     }
 
-    public function yearlyDetailHeadcountStatistics(Sport $sport, Request $request)
+    public function yearlyActivityHeadcountStatistics($year, Sport $sport)
     {
-        $lastYear = date('Y') - 1;
-        $activities = Activity::where('sport_id', $sport->id)
-            ->with('headcountStatistics')
-            ->withCount(['headcountStatistics as headcount' => function ($query) use ($request, $lastYear) {
-                $query->where('year', $request->year ?? $lastYear);
-            }])->get();
-        return okHttpResponse($activities);
+        $cacheKey = 'yearlyDetailHeadcountStatistics_' . $year . '_' . $sport->id;
+        $results = cache()->remember($cacheKey, YEARLY_ACTIVITIES_STATISTICS_CACHE_SECONDS, function () use ($year, $sport) {
+            $headcountStatistics = YearlySportsHeadcountStatistic::where('year', $year)
+                ->where('sport_id', $sport->id)
+                ->with('activity')
+                ->get();
+            return $headcountStatistics->map(function ($item) {
+                return [
+                    'id' => $item->activity->id,
+                    'name' => $item->activity->name,
+                    'headcount' => $item->total_headcount,
+                ];
+            });
+        });
+        return okHttpResponse($results);
     }
 
 }

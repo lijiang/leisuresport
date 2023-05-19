@@ -15,5 +15,5 @@ use Illuminate\Support\Facades\Route;
 
 
 Route::get('/', function () {
-    return view('sports.statistic');
+    return view('sports.headcountsChart');
 });

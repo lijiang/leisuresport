@@ -10,7 +10,7 @@ class Sport extends baseModel
     use HasFactory;
 
     protected $fillable = [
-        'sport_name',
+        'name',
     ];
 
     public function activities()
@@ -18,9 +18,5 @@ class Sport extends baseModel
         return $this->hasMany(Activity::class);
     }
 
-    public function headcountStatistics()
-    {
-        return $this->hasMany(YearlySportsHeadcountStatistic::class);
-    }
 
 }

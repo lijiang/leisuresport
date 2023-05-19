@@ -9,7 +9,7 @@ class Activity extends baseModel
     use HasFactory;
 
     protected $fillable = [
-        'activity_name',
+        'name',
         'sport_id',
     ];
 

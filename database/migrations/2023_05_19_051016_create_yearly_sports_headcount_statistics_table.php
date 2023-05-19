@@ -15,10 +15,12 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('sport_id');
             $table->foreign('sport_id')->references('id')->on('sports');
+            $table->unsignedBigInteger('activity_id');
+            $table->foreign('activity_id')->references('id')->on('activities');
             $table->year('year');
             $table->unsignedBigInteger('total_headcount');
             $table->timestamps();
-            $table->unique(['sport_id', 'year']);
+            $table->unique(['year', 'activity_id']);
         });
     }
 

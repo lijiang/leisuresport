@@ -19,6 +19,5 @@ use Illuminate\Support\Facades\Route;
 
 Route::group(['prefix' => '/sports/v1.0', 'middleware' => ['throttle:120,1', 'cors', 'json'], 'as' => 'api.',], function () {
     Route::get('/statistic/{year}', [SportV1Controller::class, 'yearlyHeadcountStatistics'])->name('index');
-    Route::get('/{sport}/statistic/{year}', [SportV1Controller::class, 'yearlyDetailHeadcountStatistics'])->name('detail');
-
+    Route::get('/statistic/{year}/{sport}', [SportV1Controller::class, 'yearlyActivityHeadcountStatistics'])->name('detail');
 });
