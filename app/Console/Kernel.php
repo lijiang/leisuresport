@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        //temporary, should update per the way of data import
+         $schedule->command('sport:archive_head_count_last_year')->hourly();
     }
 
     /**
