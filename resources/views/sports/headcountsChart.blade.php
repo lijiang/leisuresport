@@ -97,7 +97,7 @@ Sport headcount summary
                                             refreshTable(activityTableHead, activityTableData);
                                         } else {
                                             //calling ajax to load the drill down levels
-                                            chart.showLoading('Simulating Ajax ...');
+                                            chart.showLoading('Loading ...');
                                             let activityTableData = '';
                                             $.get(statisticLastYearApi + '/' + sportId, function (res) {
                                                 let activityHeadcounts = res.data;
