@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('activities', function (Blueprint $table) {
             $table->id();
-            $table->string('activity_name');
+            $table->string('name');
             $table->unsignedBigInteger('sport_id');
             $table->timestamps();
             $table->foreign('sport_id')->references('id')->on('sports')->cascadeOnDelete()->cascadeOnUpdate();
