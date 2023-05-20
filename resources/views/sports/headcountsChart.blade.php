@@ -10,7 +10,7 @@
                     <i class="fa fa-spinner fa-spin fa-3x"></i>
                     <p>Loading...</p>
                 </div>
-                <div class="card">
+                <div class="card" id="sportCard" style="display:none">
                     <div class="card-body">
                         <div id="chart"></div>
                         <div class="card-body">
@@ -69,11 +69,6 @@
             let sportDrillDownData = {};
             let sportTableData = '';
 
-            // Hide the card and show the loading element
-            $('#chart').hide();
-            $('#sportHeadcountsTable').hide();
-            $('#loading').show();
-
             try {
                 const res = await $.ajax({
                     url: statisticLastYearApi,
@@ -82,9 +77,7 @@
                 });
 
                 // Hide the loading element and show the card once the data is loaded
-                $('#loading').hide();
-                $('#chart').show();
-                $('#sportHeadcountsTable').show();
+                $('#loading, #sportCard').toggle();
 
                 let chartData = [];
                 let sportHeadcounts = res.data;
@@ -162,7 +155,13 @@
                             borderWidth: 0,
                             dataLabels: {
                                 enabled: true,
-                                format: '{point.y}'
+                                formatter: function() {
+                                    if (this.y > 1000) {
+                                        return Highcharts.numberFormat(this.y / 1000, 3) + "K";
+                                    } else {
+                                        return this.y
+                                    }
+                                }
                             }
                         }
                     },

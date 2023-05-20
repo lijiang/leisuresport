@@ -8,8 +8,6 @@ last year, by the various sports and activities the leisure provider has recorde
 
 ### Development References
 - [Laravel Reference](https://laravel.com/docs)
-- [Wiki](https://leisurelabs.atlassian.net/wiki/spaces/MET/)
-- [Jira](https://leisurelabs.atlassian.net/jira/software/projects/MET/)
 - API Specifications (@jiang)
 - Code Review Process
 
