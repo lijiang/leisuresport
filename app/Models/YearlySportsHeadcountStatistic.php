@@ -4,7 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
-class YearlySportsHeadcountStatistic extends baseModel
+class YearlySportsHeadcountStatistic extends BaseModel
 {
     use HasFactory;
 
