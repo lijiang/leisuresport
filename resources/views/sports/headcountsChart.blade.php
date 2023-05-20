@@ -6,6 +6,10 @@
     <div class="container">
         <div class="row justify-content-center">
             <div class="col-md-12">
+                <div id="loading" class="text-center">
+                    <i class="fa fa-spinner fa-spin fa-3x"></i>
+                    <p>Loading...</p>
+                </div>
                 <div class="card">
                     <div class="card-body">
                         <div id="chart"></div>
@@ -33,6 +37,7 @@
     <script src="https://code.highcharts.com/highcharts.js"></script>
     <script src="https://code.highcharts.com/modules/drilldown.js"></script>
     <script>
+
         const sportTableHead = 'Sport';
         const activityTableHead = 'Activity';
 
@@ -64,12 +69,22 @@
             let sportDrillDownData = {};
             let sportTableData = '';
 
+            // Hide the card and show the loading element
+            $('#chart').hide();
+            $('#sportHeadcountsTable').hide();
+            $('#loading').show();
+
             try {
                 const res = await $.ajax({
                     url: statisticLastYearApi,
                     type: 'GET',
                     dataType: 'json'
                 });
+
+                // Hide the loading element and show the card once the data is loaded
+                $('#loading').hide();
+                $('#chart').show();
+                $('#sportHeadcountsTable').show();
 
                 let chartData = [];
                 let sportHeadcounts = res.data;
