@@ -12,7 +12,8 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
-        // $schedule->command('inspire')->hourly();
+        //once a year in Jan. 1st
+         $schedule->command('sport:archive_head_count_last_year')->cron(env('ARCHIVE_YEARLY_STATISTIC_TASK_CRON'));
     }
 
     /**
