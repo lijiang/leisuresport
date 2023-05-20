@@ -6,6 +6,14 @@ use App\Models\Booking;
 use App\Models\YearlySportsHeadcountStatistic;
 use Illuminate\Console\Command;
 
+/**
+ * This code is responsible for archiving yearly sports headcount statistics.
+ * It retrieves booking queries from the database and summarizes the data by year.
+ * The script can be processed in segments based on the actual booking data size.
+ * Currently, it is simplified processing.
+ *
+ * @author lijiang
+ */
 class ArchiveSportYearlyStatistic extends Command
 {
     /**
@@ -15,18 +23,20 @@ class ArchiveSportYearlyStatistic extends Command
      */
     protected $signature = 'sport:archive_head_count_last_year';
 
-    protected $description = 'This script is about summarizing data by year.
-    The script retrieves booking queries from the database
-    and can be processed in segments based on the actual booking data size. Currently, it is simplified processing';
+    protected $description = 'This script is responsible for archiving yearly sports headcount statistics.';
 
 
     public function handle()
     {
-        $this->archiveHeadCountByActivity();
+        $this->archiveHeadcountByActivity();
     }
 
-
-    private function archiveHeadCountByActivity()
+    /**
+     * Archive headcount by activity.
+     *
+     * @return void
+     */
+    private function archiveHeadcountByActivity()
     {
         $lastYear = date('Y') - 1;
 
@@ -40,7 +50,8 @@ class ArchiveSportYearlyStatistic extends Command
         }
     }
 
-    private function createOrUpdateYearlyStatistic($lastYear, $activityHeadCount) {
+    private function createOrUpdateYearlyStatistic($lastYear, $activityHeadCount)
+    {
         $activity = $activityHeadCount->activity;
         $sportId = $activity->sportId;
         $yearlyStatistic = YearlySportsHeadcountStatistic::where('sport_id', $sportId)

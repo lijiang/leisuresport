@@ -8,7 +8,6 @@ use App\Models\YearlySportsHeadcountStatistic;
 
 
 define('YEARLY_STATISTICS_CACHE_SECONDS', 86400);
-define('YEARLY_ACTIVITIES_STATISTICS_CACHE_SECONDS', 86400);
 
 
 class SportV1Controller extends Controller
@@ -26,7 +25,7 @@ class SportV1Controller extends Controller
                 return [
                     'id' => $item->sport->id,
                     'name' => $item->sport->name,
-                    'headcount' => (int) $item->total_headcount,
+                    'headcount' => (int)$item->total_headcount,
                 ];
             });
         });
@@ -37,7 +36,7 @@ class SportV1Controller extends Controller
     public function yearlyActivityHeadcountStatistics($year, Sport $sport)
     {
         $cacheKey = 'yearlyDetailHeadcountStatistics_' . $year . '_' . $sport->id;
-        $results = cache()->remember($cacheKey, YEARLY_ACTIVITIES_STATISTICS_CACHE_SECONDS, function () use ($year, $sport) {
+        $results = cache()->remember($cacheKey, YEARLY_STATISTICS_CACHE_SECONDS, function () use ($year, $sport) {
             $headcountStatistics = YearlySportsHeadcountStatistic::where('year', $year)
                 ->where('sport_id', $sport->id)
                 ->with('activity')
