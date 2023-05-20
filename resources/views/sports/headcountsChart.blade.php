@@ -1,6 +1,6 @@
 @extends('layouts.base')
 @section('title')
-Sport headcount summary
+    Sport headcount summary
 @endsection
 @section('content')
     <div class="container">
@@ -36,129 +36,135 @@ Sport headcount summary
         const sportTableHead = 'Sport';
         const activityTableHead = 'Activity';
 
-        // Adding a function to format the table data
-        function formatTableData(data) {
-            let tableData = '';
-            for (let i = 0; i < data.length; i++) {
-                let name = data[i].name;
-                let headcount = data[i].headcount;
-                tableData += '<tr><td>' + name + '</td><td>' + headcount + '</td></tr>';
-            }
-            return tableData;
-        }
+        const tableRowData = (name, headcount) => `<tr><td>${name}</td><td>${headcount}</td></tr>`;
 
-        function refreshTable(header, tableData) {
+        const convertToChartAndTableData = (data) => {
+            let chartData = [];
+            let tableData = '';
+            for (const {name, headcount} of data) {
+                tableData += tableRowData(name, headcount);
+                chartData.push([name, headcount]);
+            }
+            return {
+                chartData,
+                tableData
+            };
+        };
+
+        const refreshTable = (header, tableData) => {
             $('#sportHeadcountsTable #sportTableHead').html(header);
             $('#sportHeadcountsTable tbody').html(tableData);
-        }
+        };
 
-        $(document).ready(function () {
+        $(document).ready(async function () {
             const currentDate = new Date();
             const currentYear = currentDate.getFullYear();
             const lastYear = currentYear - 1;
-            const statisticLastYearApi = '/api/sports/v1.0/statistic/' + lastYear;
+            const statisticLastYearApi = `/api/sports/v1.0/statistic/${lastYear}`;
             let sportDrillDownData = {};
             let sportTableData = '';
 
-            $.ajax({
-                url: statisticLastYearApi,
-                type: 'GET',
-                dataType: 'json',
-                success: function (res) {
-                    let chartData = [];
-                    let sportHeadcounts = res.data;
-                    $.each(sportHeadcounts, function (index, sport) {
-                        let sportData = {
-                            name: sport.name,
-                            id: sport.id,
-                            y: sport.headcount,
-                            drilldown: true
-                        };
-                        chartData.push(sportData);
-                        sportTableData += '<tr><td>' + sport.name + '</td><td>' + sport.headcount + '</td></tr>';
-                    });
-                    refreshTable(sportTableHead, sportTableData)
-                    Highcharts.chart('chart', {
-                        chart: {
-                            type: 'column',
-                            events: {
-                                drillup: function (e) {
-                                    refreshTable(sportTableHead, sportTableData);
-                                },
-                                drilldown: function (e) {
-                                    if (!e.seriesOptions) {
-                                        let chart = this;
-                                        let sportId = e.point.id;
-                                        if (sportId in sportDrillDownData) {
-                                            let series = sportDrillDownData[sportId]['series'];
-                                            let activityTableData = sportDrillDownData[sportId]['tableData'];
+            try {
+                const res = await $.ajax({
+                    url: statisticLastYearApi,
+                    type: 'GET',
+                    dataType: 'json'
+                });
+
+                let chartData = [];
+                let sportHeadcounts = res.data;
+                for (const {name, id, headcount} of sportHeadcounts) {
+                    let sportData = {
+                        name,
+                        id,
+                        y: headcount,
+                        drilldown: true
+                    };
+                    chartData.push(sportData);
+                    sportTableData += tableRowData(name, headcount);
+                }
+                refreshTable(sportTableHead, sportTableData)
+                Highcharts.chart('chart', {
+                    chart: {
+                        type: 'column',
+                        events: {
+                            drillup: function (e) {
+                                refreshTable(sportTableHead, sportTableData);
+                            },
+                            drilldown: async function (e) {
+                                if (!e.seriesOptions) {
+                                    let chart = this;
+                                    let sportId = e.point.id;
+                                    if (sportId in sportDrillDownData) {
+                                        let {series, tableData} = sportDrillDownData[sportId];
+                                        chart.hideLoading();
+                                        chart.addSeriesAsDrilldown(e.point, series);
+                                        refreshTable(activityTableHead, tableData);
+                                    } else {
+                                        //calling ajax to load the drill down levels
+                                        chart.showLoading('Loading ...');
+                                        let activityStatisticApi = `${statisticLastYearApi}/${sportId}`;
+                                        try {
+                                            const res = await $.get(activityStatisticApi);
+                                            let activityHeadcountData = convertToChartAndTableData(res.data);
+                                            let series = {
+                                                "name": e.point.name,
+                                                "data": activityHeadcountData['chartData']
+                                            };
+                                            sportDrillDownData[sportId] = {
+                                                'series': series,
+                                                'tableData': activityHeadcountData['tableData']
+                                            }
                                             chart.hideLoading();
                                             chart.addSeriesAsDrilldown(e.point, series);
-                                            refreshTable(activityTableHead, activityTableData);
-                                        } else {
-                                            //calling ajax to load the drill down levels
-                                            chart.showLoading('Loading ...');
-                                            let activityTableData = '';
-                                            $.get(statisticLastYearApi + '/' + sportId, function (res) {
-                                                let activityHeadcounts = res.data;
-                                                let activityReformatHeadcounts = [];
-                                                for (let i = 0; i < activityHeadcounts.length; i++) {
-                                                    let activityName = activityHeadcounts[i].name;
-                                                    let headcount = activityHeadcounts[i].headcount;
-                                                    activityTableData += '<tr><td>' + activityName + '</td><td>' + headcount + '</td></tr>';
-                                                    activityReformatHeadcounts.push([activityName, headcount]);
-                                                }
-                                                let series = {
-                                                    "name": e.point.name,
-                                                    "data": activityReformatHeadcounts
-                                                };
-                                                sportDrillDownData[sportId] = {
-                                                    'series': series,
-                                                    'tableData': activityTableData
-                                                }
-                                                chart.hideLoading();
-                                                chart.addSeriesAsDrilldown(e.point, series);
-                                                refreshTable(activityTableHead, activityTableData);
-                                            });
+                                            refreshTable(activityTableHead, activityHeadcountData['tableData']);
+                                        } catch (error) {
+                                            console.error(error);
+                                            chart.hideLoading();
+                                            alert('Error occurred while loading drill down data');
                                         }
                                     }
                                 }
                             }
-                        },
-                        title: {
-                            text: 'Sports Headcount'
-                        },
-                        xAxis: {
-                            type: 'category'
-                        },
-                        yAxis: {
-                            title: {
-                                text: 'Headcount'
-                            }
-                        },
-                        legend: {
-                            enabled: false
-                        },
-                        plotOptions: {
-                            series: {
-                                borderWidth: 0,
-                                dataLabels: {
-                                    enabled: true,
-                                    format: '{point.y}'
-                                }
-                            }
-                        },
-                        series: [{
-                            name: 'Sports',
-                            colorByPoint: true,
-                            data: chartData
-                        }],
-                        drilldown: {
-                            series: []
                         }
-                    });
-                }
-            });
+                    },
+                    title: {
+                        text: 'Sports Headcount'
+                    },
+                    xAxis: {
+                        type: 'category'
+                    },
+                    yAxis: {
+                        title: {
+                            text: 'Headcount'
+                        }
+                    },
+                    legend: {
+                        enabled: false
+                    },
+                    plotOptions: {
+                        series: {
+                            borderWidth: 0,
+                            dataLabels: {
+                                enabled: true,
+                                format: '{point.y}'
+                            }
+                        }
+                    },
+                    series: [{
+                        name: 'Sports',
+                        colorByPoint: true,
+                        data: chartData
+                    }],
+                    drilldown: {
+                        series: []
+                    }
+                });
+            } catch (error) {
+                console.error(error);
+                alert('Error occurred while loading data');
+            }
         });
+
     </script>
 @endsection
